@@ -2,8 +2,10 @@ package com.github.ynfeng.jikeddd.domain.usercontext.impl;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.github.ynfeng.jikeddd.domain.usercontext.User;
+import com.github.ynfeng.jikeddd.domain.usercontext.UserDuplicatedException;
 import com.github.ynfeng.jikeddd.domain.usercontext.UserRepository;
 import javax.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,24 @@ class UserRepositoryDBImplTest {
 
     @Test
     void should_save_user() {
-        User user = new User("zhangsan");
+        User zhangsan = new User("zhangsan");
 
-        userRepository.add(user);
+        userRepository.add(zhangsan);
 
         assertThat(queryUserByUserName("zhangsan"), notNullValue());
+    }
+
+    @Test
+    void should_not_duplicate() {
+        User zhangsan = new User("zhangsan");
+        userRepository.add(zhangsan);
+
+        try {
+            User otherZhangsan = new User("zhangsan");
+            userRepository.add(otherZhangsan);
+            fail();
+        } catch (UserDuplicatedException igonred) {
+        }
     }
 
     private User queryUserByUserName(String userName) {

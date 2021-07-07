@@ -15,4 +15,8 @@ public class User extends Persistentable {
     protected User() {
 
     }
+
+    public String name() {
+        return name;
+    }
 }
