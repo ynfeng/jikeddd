@@ -18,15 +18,20 @@ task cucumber() {
         javaexec {
             main = "io.cucumber.core.cli.Main"
             classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
-            args = ['--plugin', 'pretty', '--glue', 'hellocucumber', 'src/test/resources']
         }
+    }
+}
+
+configurations {
+    cucumberRuntime {
+        extendsFrom testImplementation
     }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    runtimeOnly 'mysql:mysql-connector-java'
+    implementation 'mysql:mysql-connector-java'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.cucumber:cucumber-java:6.10.4'
     testImplementation 'io.cucumber:cucumber-junit:6.10.4'

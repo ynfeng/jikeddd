@@ -6,7 +6,6 @@
     当使用 "zhangsan" 注册
     那么注册成功
 
-  @Igonre
   场景: 同一个用户名不能重复注册
   假如 "zhangsan" 已经被注册
     当使用 "zhangsan" 注册

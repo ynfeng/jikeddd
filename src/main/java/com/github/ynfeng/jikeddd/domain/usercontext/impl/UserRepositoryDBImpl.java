@@ -19,8 +19,8 @@ public class UserRepositoryDBImpl implements UserRepository {
 
     @Override
     public void add(User user) {
-        Optional<User> u = findUserByName(user.name());
-        if (u.isPresent()) {
+        Optional<User> existUser = findUserByName(user.name());
+        if (existUser.isPresent()) {
             throw new UserDuplicatedException();
         }
         entityManager.persist(user);

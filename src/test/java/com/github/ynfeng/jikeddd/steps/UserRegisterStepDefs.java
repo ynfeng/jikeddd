@@ -6,12 +6,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.ynfeng.jikeddd.application.UserRegisterRequest;
+import io.cucumber.java.Before;
 import io.cucumber.java.zh_cn.假如;
 import io.cucumber.java.zh_cn.当;
 import io.cucumber.java.zh_cn.那么;
-import io.cucumber.junit.Cucumber;
 import io.cucumber.spring.CucumberContextConfiguration;
-import org.junit.runner.RunWith;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-@RunWith(Cucumber.class)
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -28,8 +30,27 @@ public class UserRegisterStepDefs {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private DataSource dataSource;
 
     private ResultActions result;
+
+    @Before
+    public void setup() throws SQLException {
+        truncateTables();
+    }
+
+    private void truncateTables() throws SQLException {
+        Connection conn = dataSource.getConnection();
+        Statement stmt = conn.createStatement();
+
+        try {
+            stmt.execute("truncate user");
+        } finally {
+            stmt.close();
+            conn.close();
+        }
+    }
 
     @当("使用 {string} 注册")
     public void 使用_用户名_注册(String username) throws Exception {
@@ -49,13 +70,19 @@ public class UserRegisterStepDefs {
     }
 
     @那么("注册失败")
-    public void 注册失败() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+    public void 注册失败() throws Exception {
+        result.andDo(print()).andExpect(status().is4xxClientError());
     }
 
     @假如("{string} 已经被注册")
-    public void 已经被注册(String string) {
-        throw new io.cucumber.java.PendingException();
+    public void 用户已经被注册(String username) throws Exception {
+        UserRegisterRequest request = new UserRegisterRequest();
+        request.setUsername(username);
+
+        mockMvc.perform(
+            post("/users")
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON))
+            .andDo(print()).andExpect(status().isOk());
     }
 }
